@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Ada Yonath: A Missão do Ribossomo</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b1a3a;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+#w{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+#box{position:relative;width:min(100vw,calc(100vh * 2));aspect-ratio:2/1;container-type:inline-size}
+canvas{width:100%;height:100%;display:block;background:#000}
+#ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,15,40,.75);padding:3cqw;z-index:5}
+.pn{background:#fff;color:#12213f;border-radius:2cqw;border:.6cqw solid #0038b8;box-shadow:0 0 0 .6cqw #f2c230;padding:2.4cqw 3.4cqw;max-width:88%;text-align:center}
+.pn h1{margin:.6cqw 0;font-size:5cqw;color:#0038b8}
+.pn h2{margin:.8cqw 0;font-size:3.4cqw}
+.pn p{margin:.8cqw 0;font-size:2.3cqw;line-height:1.35}
+.yr{display:inline-block;background:#f2c230;color:#5a3a00;font-weight:800;border-radius:2cqw;padding:.4cqw 2cqw;font-size:2.2cqw}
+.pn button{margin-top:1.4cqw;font:inherit;background:#0038b8;color:#fff;border:0;border-radius:2cqw;padding:1.2cqw 3.4cqw;font-size:2.5cqw;font-weight:700;cursor:pointer;box-shadow:0 .5cqw 0 #00216e}
+.pn button:active{transform:translateY(.4cqw);box-shadow:none}
+#tc{position:absolute;left:0;right:0;bottom:2cqw;display:none;justify-content:space-between;padding:0 3cqw;pointer-events:none;z-index:2;touch-action:none}
+#tc div{display:flex;gap:2cqw}
+#tc b{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;width:11cqw;height:11cqw;border-radius:50%;background:rgba(255,255,255,.35);border:.4cqw solid rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:5cqw}
+@media (pointer:coarse){#tc{display:flex}}
+</style>
+</head>
+<body>
+<div id="w"><div id="box">
+<canvas id="c"></canvas>
+<div id="tc"><div><b id="tl">◀</b><b id="tr">▶</b></div><b id="tj">⤒</b></div>
+<div id="ov"></div>
+</div></div>
+<script>
+var cv=document.getElementById('c'),x=cv.getContext('2d'),W=800,H=400,GY=340,LEN=3700,TX=3500,PI=Math.PI;
+cv.width=W;cv.height=H;
+var Z=[
+{x:0,n:'Jerusalém',t:[255,205,120],b:[255,242,205],g:'#c98b3a',g2:'#a8702a'},
+{x:800,n:'Instituto Weizmann',t:[50,165,185],b:[200,240,240],g:'#1b7f86',g2:'#136269'},
+{x:1650,n:'O desafio do ribossomo',t:[115,65,200],b:[225,205,250],g:'#6a3bb8',g2:'#512c91'},
+{x:2600,n:'Antibióticos',t:[55,160,100],b:[205,240,215],g:'#2a8a52',g2:'#1f6b3f'},
+{x:3300,n:'Prêmio Nobel',t:[10,40,110],b:[250,215,110],g:'#d9a520',g2:'#a97f12'}];
+var I=[
+{x:420,y:'1939',t:'Nasce em Jerusalém',d:'Ada Yonath nasceu em Jerusalém, numa família humilde. Mesmo com poucos recursos, sua curiosidade levou à ciência.'},
+{x:700,y:'Faculdade',t:'Estudando Química',d:'Ada estudou Química na Universidade Hebraica de Jerusalém e aprendeu como as moléculas são construídas.'},
+{x:1000,y:'1968',t:'Doutorado no Weizmann',d:'Ada concluiu o doutorado no Instituto Weizmann, em Israel, estudando estruturas com raios X (cristalografia).'},
+{x:1350,y:'Anos 1970',t:'Um laboratório pioneiro',d:'No Weizmann, ela montou o primeiro laboratório de cristalografia de proteínas de Israel.'},
+{x:1900,y:'1980',t:'Os primeiros cristais',d:'Ada obteve os primeiros cristais de ribossomo, a "fábrica de proteínas" das células. Muitos achavam isso impossível!'},
+{x:2300,y:'A ideia genial',t:'Frio e bactérias extremas',d:'Ela usou bactérias de ambientes extremos e congelou os cristais em temperaturas muito baixas para protegê-los dos raios X.'},
+{x:2900,y:'Medicina',t:'Antibióticos mais inteligentes',d:'Seu trabalho mostrou como vários antibióticos atacam o ribossomo das bactérias, ajudando a criar remédios melhores.'}];
+var D=[[200,'dome'],[560,'dome'],[950,'flask'],[1250,'flask'],[1800,'ribo'],[2150,'ribo'],[2700,'bact'],[3050,'bact'],[3400,'ribo']];
+var EN=[[520,450,620,0],[900,820,960,0],[1250,1150,1450,0],[1760,1700,1840,1],[2050,1980,2200,2],[2400,2330,2540,1],[2700,2650,2820,3],[3000,2950,3120,3]];
+var NM=['Dúvida','Radiação','Cristal frágil','Bactéria resistente'],CL=['#8a93a6','#ffd23f','#7fe4f0','#3fbf6a'];
+var K={l:0,r:0,j:0},p,S,C,sc,found,frame=0,run=0,pause=1,done=0,cam=0,sk=[255,205,120],sk2=[255,242,205],zn=-1,zt=0,E,lives=3,inv=0,kill=0,total=0,msg='',mt=0;
+function ov(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function zi(px){var k=0;for(var i=0;i<Z.length;i++)if(px>=Z[i].x)k=i;return k}
+function rgb(a){return 'rgb('+(a[0]|0)+','+(a[1]|0)+','+(a[2]|0)+')'}
+function st(x0,n){for(var i=0;i<n;i++)S.push({x:x0+i*40,y:GY-(i+1)*40,w:40,h:(i+1)*40})}
+function reset(){
+p={x:60,y:GY-36,w:22,h:36,vx:0,vy:0,on:0,f:1};S=[];
+I.forEach(function(o,i){S.push({x:o.x,y:230,w:40,h:40,o:o,hit:0,bump:0});if(i%2==0){S.push({x:o.x-40,y:230,w:40,h:40});S.push({x:o.x+40,y:230,w:40,h:40})}});
+st(1560,3);st(3180,4);S.push({x:1100,y:260,w:120,h:30},{x:2500,y:260,w:120,h:30});
+C=[];for(var i=0;i<21;i++){var c={x:250+i*160,y:i%3==0?190:305,g:0},b={x:c.x-8,y:c.y-8,w:16,h:16};if(!S.some(function(s){return ov(b,s)}))C.push(c)}
+total=C.length;sc=0;found=0;done=0;cam=0;zn=-1;lives=3;inv=0;kill=0;mt=0;E=EN.map(function(e){return{x:e[0],a:e[1],b:e[2],t:e[3],s:.8+.2*(e[3]%2),d:0,gone:0}})}
+function clearK(){K.l=K.r=K.j=0}
+function show(html,btn,cb){var o=document.getElementById('ov');o.innerHTML='<div class="pn">'+html+'<button id="ob">'+btn+'</button></div>';o.style.display='flex';var b=document.getElementById('ob');b.onclick=function(){o.style.display='none';clearK();cb()};b.focus()}
+function hitB(s){s.hit=1;s.bump=8;found++;pause=1;clearK();
+show('<div class="yr">'+s.o.y+'</div><h2>'+s.o.t+'</h2><p>'+s.o.d+'</p><p style="font-size:1.8cqw;color:#5a6a88">Descobertas: '+found+' de '+I.length+'</p>','Continuar ▶',function(){pause=0})}
+function nobel(){pause=1;clearK();
+show('<div class="yr">2009</div><h2>🏆 Prêmio Nobel de Química</h2><p>Ada Yonath recebeu o Nobel de Química, dividido com Venkatraman Ramakrishnan e Thomas Steitz, pelo estudo da estrutura e da função do ribossomo. Ela foi a primeira mulher israelense a ganhar um Nobel.</p>','Ver resultado ▶',final)}
+function final(){var m=I.length-found,mc=total-sc,perf=!m&&!mc;
+show('<h2>'+(perf?'Missão perfeita! 🏅':'Missão cumprida! 🎉')+'</h2><p>Descobertas: <b>'+found+'/'+I.length+'</b> · Moléculas: <b>'+sc+'/'+total+'</b> · Vilões derrotados: <b>'+kill+'</b></p><p>'+(perf?'<b>Você coletou todas as moléculas e fez todas as descobertas! 🎁 Mostre esta tela na feira e receba a sua recompensa!</b>':'Faltaram '+m+' descoberta(s) e '+mc+' molécula(s). Quem coletar <b>todas</b> as moléculas e fizer <b>todas</b> as descobertas será recompensado! 🎁')+'</p>','Jogar de novo',function(){reset();pause=0})}
+function gameOver(){pause=1;clearK();show('<h2>Ah, que pena! 💔</h2><p>Os vilões venceram desta vez. Mas a Ada também precisou tentar muitas vezes até conseguir. Tente de novo!</p>','Tentar de novo',function(){reset();pause=0})}
+function begin(){reset();pause=1;
+show('<h1>Ada Yonath</h1><h2>A Missão do Ribossomo</h2><p style="font-size:2cqw">Ajude a cientista a atravessar a sua história!<br><b>← →</b> andar · <b>Espaço</b> ou <b>↑</b> pular<br>Bata nos blocos <b>?</b> por baixo para descobrir fatos da vida dela.<br>Cuidado com os vilões da jornada (Dúvida, Radiação, Cristal frágil e Bactéria resistente): pule em cima deles! Você tem 3 ♥.<br>🎁 Quem coletar todas as moléculas e fizer todas as descobertas será recompensado!<br>No celular, use os botões e deixe a tela deitada.</p>','Jogar ▶',function(){run=1;pause=0})}
+function step(){
+var a=(K.r?1:0)-(K.l?1:0);p.vx=a*3.3;if(a)p.f=a;
+if(K.j&&p.on){p.vy=-13;p.on=0}else if(!K.j&&p.vy<-5)p.vy=-5;
+p.vy=Math.min(p.vy+.62,14);
+p.x+=p.vx;p.x=Math.max(0,Math.min(LEN-p.w,p.x));
+S.forEach(function(s){if(ov(p,s)){if(p.vx>0)p.x=s.x-p.w;else if(p.vx<0)p.x=s.x+s.w}});
+p.y+=p.vy;p.on=0;
+if(p.y+p.h>=GY){p.y=GY-p.h;p.vy=0;p.on=1}
+S.forEach(function(s){if(ov(p,s)){if(p.vy>0){p.y=s.y-p.h;p.vy=0;p.on=1}else if(p.vy<0){p.y=s.y+s.h;p.vy=0;if(s.o&&!s.hit)hitB(s)}}});
+S.forEach(function(s){if(s.bump>0)s.bump--});
+C.forEach(function(c){if(!c.g&&Math.abs(p.x+11-c.x)<20&&Math.abs(p.y+18-c.y)<26){c.g=1;sc++}});
+if(inv>0)inv--;if(mt>0)mt--;
+E.forEach(function(e){if(e.gone)return;if(e.d>0){e.d--;if(!e.d)e.gone=1;return}
+e.x+=e.s;if(e.x<e.a){e.x=e.a;e.s=Math.abs(e.s)}if(e.x>e.b){e.x=e.b;e.s=-Math.abs(e.s)}
+var eb={x:e.x,y:GY-26,w:28,h:26};
+if(ov(p,eb)){if(p.vy>0&&p.y+p.h-eb.y<18){e.d=25;p.vy=-9;p.on=0;kill++;msg=NM[e.t]+' derrotada!';mt=90}
+else if(inv<=0){lives--;inv=100;p.vy=-8;p.on=0;p.x=Math.max(0,p.x+(p.x<e.x?-16:16));if(lives<=0)gameOver()}}});
+var z=zi(p.x);if(z!=zn){zn=z;zt=150}if(zt>0)zt--;
+cam=Math.max(0,Math.min(LEN-W,p.x-300));
+if(!done&&p.x+p.w>TX-10){done=1;nobel()}}
+function deco(d){var t=d[1];x.save();x.translate(d[0],GY);
+if(t=='dome'){x.fillStyle='#e8c14a';x.beginPath();x.arc(0,0,48,PI,0);x.fill();x.fillStyle='#b8860b';x.fillRect(-48,-6,96,6);x.fillStyle='#e8c14a';x.fillRect(-2,-72,4,26);x.fillStyle='#d9b878';x.fillRect(-80,-34,26,34);x.fillRect(54,-44,26,44);x.fillStyle='#8a5a1a';x.fillRect(-72,-16,10,16);x.fillRect(62,-18,10,18)}
+else if(t=='flask'){x.fillStyle='rgba(255,255,255,.55)';x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(-10,-70);x.lineTo(10,-70);x.lineTo(10,-42);x.lineTo(32,0);x.lineTo(-32,0);x.lineTo(-10,-42);x.closePath();x.fill();x.stroke();x.fillStyle='#17c3b8';x.beginPath();x.moveTo(-20,-18);x.lineTo(20,-18);x.lineTo(32,0);x.lineTo(-32,0);x.closePath();x.fill()}
+else if(t=='ribo'){x.fillStyle='#b78cf0';x.beginPath();x.ellipse(0,-30,38,26,0,0,2*PI);x.fill();x.fillStyle='#e0c8ff';x.beginPath();x.ellipse(0,-66,25,17,0,0,2*PI);x.fill();x.strokeStyle='#ffd23f';x.lineWidth=3;x.beginPath();x.moveTo(-60,-48);x.bezierCurveTo(-30,-60,30,-36,60,-48);x.stroke();x.fillStyle='#ffd23f';for(var i=-2;i<3;i++){x.beginPath();x.arc(i*12,-48+(i%2)*4,3,0,2*PI);x.fill()}}
+else{x.fillStyle='#8be8ad';x.strokeStyle='#1f6b3f';x.lineWidth=3;x.beginPath();x.ellipse(0,-26,40,20,-.3,0,2*PI);x.fill();x.stroke();x.fillStyle='#1f6b3f';for(var j=0;j<4;j++){x.beginPath();x.arc(-18+j*12,-26+(j%2)*6-3,3,0,2*PI);x.fill()}x.strokeStyle='#8be8ad';x.beginPath();x.moveTo(36,-40);x.quadraticCurveTo(54,-56,64,-40);x.stroke()}
+x.restore()}
+function eyes(){x.fillStyle='#fff';x.beginPath();x.ellipse(-6,-2,4.5,5.5,0,0,2*PI);x.fill();x.beginPath();x.ellipse(6,-2,4.5,5.5,0,0,2*PI);x.fill();x.fillStyle='#111';x.beginPath();x.arc(-5,-1,2,0,2*PI);x.fill();x.beginPath();x.arc(5,-1,2,0,2*PI);x.fill();x.strokeStyle='#111';x.lineWidth=2.5;x.beginPath();x.moveTo(-11,-10);x.lineTo(-2,-6);x.moveTo(11,-10);x.lineTo(2,-6);x.stroke()}
+function enemy(e){if(e.gone)return;x.save();x.translate(e.x+14,GY);if(e.d>0)x.scale(1,.3);var t=e.t,i,a;
+x.fillStyle=CL[t];x.strokeStyle='#222';x.lineWidth=2;
+if(t==2){x.beginPath();x.moveTo(0,-27);x.lineTo(14,-13);x.lineTo(0,0);x.lineTo(-14,-13);x.closePath();x.fill();x.stroke();x.strokeStyle='#2f7a88';x.lineWidth=1.5;x.beginPath();x.moveTo(-4,-26);x.lineTo(2,-19);x.lineTo(-3,-14);x.stroke()}
+else if(t==1){x.strokeStyle='#e08a00';x.lineWidth=3;for(i=0;i<8;i++){a=i*PI/4+frame*.03;x.beginPath();x.moveTo(Math.cos(a)*10,-13+Math.sin(a)*10);x.lineTo(Math.cos(a)*16,-13+Math.sin(a)*16);x.stroke()}x.strokeStyle='#222';x.lineWidth=2;x.beginPath();x.arc(0,-13,11,0,2*PI);x.fill();x.stroke()}
+else{x.beginPath();x.ellipse(0,-12,14,12,0,0,2*PI);x.fill();x.stroke();
+if(t==0){x.beginPath();x.arc(-7,-23,6,0,2*PI);x.fill();x.stroke();x.beginPath();x.arc(6,-24,6,0,2*PI);x.fill();x.stroke()}
+else{x.strokeStyle='#1f6b3f';x.lineWidth=3;for(i=-1;i<2;i++){x.beginPath();x.moveTo(i*9,-2);x.lineTo(i*9+Math.sin(frame*.3+i)*3,3);x.stroke()}}}
+x.translate(0,-13);eyes();x.restore()}
+function trophy(){x.save();x.translate(TX,GY);x.fillStyle='#0038b8';x.fillRect(-26,-22,52,22);x.fillStyle='#fff';x.font='bold 10px sans-serif';x.textAlign='center';x.fillText('NOBEL',0,-8);
+x.fillStyle='#ffd23f';x.strokeStyle='#b57f00';x.lineWidth=3;x.beginPath();x.moveTo(-24,-90);x.lineTo(24,-90);x.quadraticCurveTo(24,-48,0,-42);x.quadraticCurveTo(-24,-48,-24,-90);x.closePath();x.fill();x.stroke();x.fillRect(-5,-42,10,20);
+x.beginPath();x.arc(-26,-74,10,PI*.5,PI*1.5);x.stroke();x.beginPath();x.arc(26,-74,10,PI*1.5,PI*.5);x.stroke();
+var s=Math.sin(frame*.1)*3;x.fillStyle='#fff';x.font='18px sans-serif';x.fillText('✦',-38,-100+s);x.fillText('✦',36,-96-s);x.restore()}
+function ada(){x.save();x.translate(p.x-cam+11,p.y);x.scale(p.f,1);
+var w=p.on&&p.vx?Math.sin(frame*.35)*4:0;
+x.fillStyle='#1a2a5e';x.fillRect(-9+w,27,8,9);x.fillRect(1-w,27,8,9);
+x.fillStyle='#fff';x.strokeStyle='#1a2a5e';x.lineWidth=1.5;x.fillRect(-11,14,22,15);x.strokeRect(-11,14,22,15);
+x.fillStyle='#0038b8';x.fillRect(-2,14,4,15);
+x.fillStyle='#fff';x.fillRect(2,16+(p.on?0:-5),6,10);x.strokeRect(2,16+(p.on?0:-5),6,10);
+x.fillStyle='#f0c8a0';x.beginPath();x.arc(0,7,9,0,2*PI);x.fill();
+x.fillStyle='#5b3a24';x.beginPath();x.arc(0,5,10,PI*1.02,PI*1.98);x.closePath();x.fill();
+x.beginPath();x.arc(-8,4,4,0,2*PI);x.fill();x.beginPath();x.arc(7,3,3.5,0,2*PI);x.fill();x.beginPath();x.arc(-3,-2,4,0,2*PI);x.fill();
+x.strokeStyle='#222';x.lineWidth=1.5;x.strokeRect(1,5,7,5);x.fillStyle='#222';x.fillRect(5,7,2,2);
+x.restore()}
+function draw(){
+var tz=Z[zi(p.x+11)];for(var i=0;i<3;i++){sk[i]+=(tz.t[i]-sk[i])*.04;sk2[i]+=(tz.b[i]-sk2[i])*.04}
+var g=x.createLinearGradient(0,0,0,GY);g.addColorStop(0,rgb(sk));g.addColorStop(1,rgb(sk2));x.fillStyle=g;x.fillRect(0,0,W,H);
+x.fillStyle='rgba(255,255,255,.5)';x.beginPath();x.arc(660,70,34,0,2*PI);x.fill();
+x.fillStyle='rgba(255,255,255,.22)';for(var i=-1;i<6;i++){var hx=i*260-(cam*.3%260);x.beginPath();x.arc(hx+130,GY,120+(i&1)*40,PI,0);x.fill()}
+x.save();x.translate(-cam,0);
+D.forEach(function(d){if(d[0]>cam-100&&d[0]<cam+W+100)deco(d)});
+var t0=Math.floor(cam/40);for(var tx=t0;tx<t0+22;tx++){var zz=Z[zi(tx*40)];x.fillStyle=zz.g;x.fillRect(tx*40,GY,40,60);x.fillStyle='rgba(255,255,255,.28)';x.fillRect(tx*40,GY,40,8);x.strokeStyle=zz.g2;x.lineWidth=2;x.strokeRect(tx*40+1,GY+1,38,58)}
+trophy();
+S.forEach(function(s){if(s.x>cam+W||s.x+s.w<cam)return;var by=s.y-(s.bump>0?Math.sin(s.bump/8*PI)*8:0);
+if(s.o){x.fillStyle=s.hit?'#8d7a66':'#f2c230';x.fillRect(s.x,by,s.w,s.h);x.strokeStyle=s.hit?'#5e4e3e':'#b57f00';x.lineWidth=3;x.strokeRect(s.x+1.5,by+1.5,s.w-3,s.h-3);if(!s.hit){x.fillStyle='#7a4b00';x.font='bold 26px sans-serif';x.textAlign='center';x.fillText('?',s.x+20,by+30)}}
+else{x.fillStyle='#0038b8';x.fillRect(s.x,s.y,s.w,s.h);x.strokeStyle='#fff';x.lineWidth=2;for(var u=s.x;u<s.x+s.w;u+=40)for(var v=s.y;v<s.y+s.h;v+=20)x.strokeRect(u+1,v+1,Math.min(40,s.x+s.w-u)-2,Math.min(20,s.y+s.h-v)-2)}});
+E.forEach(enemy);
+C.forEach(function(c){if(c.g)return;var by=c.y+Math.sin(frame*.08+c.x)*3;x.fillStyle='#ffd23f';x.strokeStyle='#b57f00';x.lineWidth=2;x.beginPath();x.arc(c.x,by,7,0,2*PI);x.fill();x.stroke();x.fillStyle='#fff';x.beginPath();x.arc(c.x-2,by-2,2,0,2*PI);x.fill()});
+x.restore();
+if(inv<=0||frame%6<3)ada();
+x.textAlign='left';x.font='bold 16px sans-serif';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.6)';x.fillStyle='#fff';
+var h='★ '+found+'/'+I.length+'    ⚛ '+sc+'/'+total;x.strokeText(h,12,24);x.fillText(h,12,24);
+x.font='26px sans-serif';x.textAlign='right';for(var i=0;i<3;i++){x.fillStyle=i<lives?'#ff4d6d':'rgba(0,0,0,.35)';x.strokeText('♥',W-14-(2-i)*28,28);x.fillText('♥',W-14-(2-i)*28,28)}x.textAlign='left';x.font='bold 16px sans-serif';x.fillStyle='#fff';
+if(zt>0&&zn>=0){x.globalAlpha=Math.min(1,zt/30);x.textAlign='center';x.font='bold 22px sans-serif';x.strokeText(Z[zn].n,W/2,60);x.fillText(Z[zn].n,W/2,60);x.globalAlpha=1}
+if(mt>0){x.globalAlpha=Math.min(1,mt/20);x.textAlign='center';x.font='bold 18px sans-serif';x.fillStyle='#fff';x.strokeText(msg,W/2,130);x.fillText(msg,W/2,130);x.globalAlpha=1}
+if(run&&!found&&p.x<400){x.textAlign='center';x.font='bold 15px sans-serif';x.strokeText('Pule e bata nos blocos ? por baixo!',W/2,100);x.fillText('Pule e bata nos blocos ? por baixo!',W/2,100)}}
+var last=0,acc=0;
+function loop(t){requestAnimationFrame(loop);acc+=Math.min(t-last,100);last=t;while(acc>=16.67){acc-=16.67;if(run&&!pause)step();frame++}draw()}
+var map={ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ArrowUp:'j',KeyW:'j',Space:'j'};
+addEventListener('keydown',function(e){var k=map[e.code];if(k&&!pause){K[k]=1;e.preventDefault()}else if(k&&e.code.indexOf('Arrow')==0)e.preventDefault()});
+addEventListener('keyup',function(e){var k=map[e.code];if(k)K[k]=0});
+addEventListener('blur',clearK);
+[['tl','l'],['tr','r'],['tj','j']].forEach(function(a){var el=document.getElementById(a[0]);el.addEventListener('pointerdown',function(e){e.preventDefault();if(!pause)K[a[1]]=1});['pointerup','pointerleave','pointercancel'].forEach(function(v){el.addEventListener(v,function(){K[a[1]]=0})})});
+begin();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
